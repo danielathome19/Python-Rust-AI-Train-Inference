@@ -1,0 +1,78 @@
+[package]
+name = "python-rust-ai"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+ndarray = "0.16.1"
+ndarray-npy = "0.9.1"
+onnxruntime = "0.0.14"
+
+
+[[bin]]
+name = "hello_world"
+path = "src/main.rs"
+
+[[bin]]
+name = "perceptron"
+path = "perceptron/inference.rs"
+
+
+[[bin]]
+name = "classification"
+path = "scikit-learn/classification/inference.rs"
+
+[[bin]]
+name = "regression"
+path = "scikit-learn/regression/inference.rs"
+
+[[bin]]
+name = "clustering"
+path = "scikit-learn/clustering/inference.rs"
+
+[[bin]]
+name = "dimensionality-reduction"
+path = "scikit-learn/dimensionality-reduction/inference.rs"
+
+
+[[bin]]
+name = "tf-cnn"
+path = "tensorflow/cnn/inference.rs"
+
+[[bin]]
+name = "tf-rnn"
+path = "tensorflow/rnn/inference.rs"
+
+[[bin]]
+name = "tf-lstm"
+path = "tensorflow/lstm/inference.rs"
+
+[[bin]]
+name = "tf-gan"
+path = "tensorflow/gan/inference.rs"
+
+[[bin]]
+name = "tf-mlp"
+path = "tensorflow/mlp/inference.rs"
+
+
+[[bin]]
+name = "lt-cnn"
+path = "lightning/cnn/inference.rs"
+
+[[bin]]
+name = "lt-rnn"
+path = "lightning/rnn/inference.rs"
+
+[[bin]]
+name = "lt-lstm"
+path = "lightning/lstm/inference.rs"
+
+[[bin]]
+name = "lt-gan"
+path = "lightning/gan/inference.rs"
+
+[[bin]]
+name = "lt-mlp"
+path = "lightning/mlp/inference.rs"

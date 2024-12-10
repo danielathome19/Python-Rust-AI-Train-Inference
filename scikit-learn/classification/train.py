@@ -28,5 +28,9 @@ model.fit(train_set, train_labels)
 # Save the trained model in ONNX format
 initial_type = [('float_input', FloatTensorType([None, train_set.shape[1]]))]
 onnx_model = skl2onnx.convert_sklearn(model, initial_types=initial_type)
-with open("classification_model.onnx", "wb") as f:
+with open("models/classification_model.onnx", "wb") as f:
     f.write(onnx_model.SerializeToString())
+
+# Evaluate the model
+accuracy = model.score(test_set, test_labels)
+print(f"Model accuracy: {accuracy:.2f}")

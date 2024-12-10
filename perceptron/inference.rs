@@ -1,27 +1,52 @@
-use std::fs::File;
-use std::io::{BufReader, Read};
+/* Run with: cargo run --bin perceptron */
+/* Inlay hints with Ctrl + Alt */
+
+// use std::fs::File;
+// use std::io::{BufReader, Read};
 use ndarray::Array1;
+use ndarray_npy::read_npy;
+
+// Define a Perceptron struct
+struct Perceptron {
+    weights: Array1<f64>,
+    bias: f64,
+}
+
+impl Perceptron {
+    // Method for inference
+    fn predict(&self, inputs: &[f64]) -> i32 {
+        let weighted_sum: f64 = self.weights.iter().zip(inputs.iter()).map(|(w, x)| w * x).sum::<f64>() + self.bias;
+        if weighted_sum >= 0.0 { 1 } else { 0 }
+    }
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Load the trained model
-    let file = File::open("perceptron_weights.npy")?;
-    let mut buf_reader = BufReader::new(file);
-    let mut contents = Vec::new();
-    buf_reader.read_to_end(&mut contents)?;
-    let weights: Array1<f64> = ndarray::Array::from_shape_vec((3,), contents)?;
+    // Load the weights and bias from files
+    let weights: Array1<f64> = read_npy("models/perceptron_weights.npy")?;
+    let bias_array: Array1<f64> = read_npy("models/perceptron_bias.npy")?;
+    let bias: f64 = bias_array[0];
 
-    // Define the activation function
-    let activation_fn = |x: f64| -> i32 {
-        if x >= 0.0 { 1 } else { 0 }
-    };
+    // Initialize the Perceptron model
+    let perceptron = Perceptron { weights, bias };
 
-    // Perform inference on new data
-    let input_data = vec![1.0, 0.0, 1.0]; // Example input data
-    let z = weights.dot(&Array1::from(input_data));
-    let prediction = activation_fn(z);
+    // Define input data for inference (AND gate examples)
+    let input_data = vec![
+        vec![0.0, 0.0],
+        vec![0.0, 1.0],
+        vec![1.0, 0.0],
+        vec![1.0, 1.0],
+    ];
 
-    // Print the inference result
-    println!("Prediction: {}", prediction);
+    // Perform inference and collect results
+    let results: Vec<i32> = input_data
+        .iter()
+        .map(|inputs| perceptron.predict(inputs))
+        .collect();
+
+    // Print the results
+    for (inputs, output) in input_data.iter().zip(results.iter()) {
+        println!("Input: {:?}, Output: {}", inputs, output);
+    }
 
     Ok(())
 }
