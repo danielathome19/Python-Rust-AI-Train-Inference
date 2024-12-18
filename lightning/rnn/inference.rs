@@ -1,27 +1,33 @@
-use onnxruntime::{environment::Environment, tensor::OrtOwnedTensor, GraphOptimizationLevel, LoggingLevel, session::Session};
-use ndarray::array;
+use ort::{Environment, SessionBuilder, GraphOptimizationLevel, Value, LoggingLevel};
+use std::{path::Path, sync::Arc};
+use ndarray::{Array3, CowArray};
+use python_rust_ai::{read_numeric_sample, ort_argmax};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Load the ONNX model
-    let environment = Environment::builder()
+    // Initialize the environment
+    let env = Arc::new(Environment::builder()
         .with_name("rnn_inference")
         .with_log_level(LoggingLevel::Warning)
-        .build()?;
-    let session = environment
-        .new_session_builder()?
-        .with_optimization_level(GraphOptimizationLevel::Basic)?
-        .with_model_from_file("rnn_model.onnx")?;
+        .build()?);
 
-    // Prepare input data for inference
-    let input_data = array![[[0.0; 28]; 28]];
-    let input_tensor_values = vec![input_data.into_dyn()];
+    // Load the ONNX model
+    let model_path = Path::new("models/lt_rnn_model.onnx");
+    let session = SessionBuilder::new(&env)?
+        .with_optimization_level(GraphOptimizationLevel::Level1)?
+        .with_model_from_file(model_path)?;
+
+    // Prepare sample input data
+    let (input_data, input_label) = read_numeric_sample("data/mnist_sample_row.csv")?;
+    let input_array = CowArray::from(Array3::from_shape_vec((1, 28, 28), input_data)?.into_dyn());
+    let input_tensor_values = vec![Value::from_array(session.allocator(), &input_array)?];
 
     // Perform inference
-    let outputs: Vec<OrtOwnedTensor<f32, _>> = session.run(input_tensor_values)?;
-
-    // Print the inference result
+    let outputs = session.run(input_tensor_values)?;
     for output in outputs {
-        println!("{:?}", output);
+        let output_array = output.try_extract::<f32>()?;
+        let predicted_label = ort_argmax(output_array);
+        println!("Predicted label: {}", predicted_label);
+        println!("Actual label: {}", input_label);
     }
 
     Ok(())

@@ -1,16 +1,22 @@
-import pytorch_lightning as pl
 import torch
-import torch.nn.functional as F
 import torch.onnx
-from torch.utils.data import DataLoader, random_split
+import pytorch_lightning as pl
+import torch.nn.functional as F
 from torchvision import transforms
 from torchvision.datasets import MNIST
+from torch.utils.data import DataLoader, random_split
 
 # Load a suitable dataset
-dataset = MNIST('', train=True, download=True, transform=transforms.ToTensor())
+dataset = MNIST('./data', train=True, download=True, transform=transforms.ToTensor())
 mnist_train, mnist_val = random_split(dataset, [55000, 5000])
 train_loader = DataLoader(mnist_train, batch_size=32)
 val_loader = DataLoader(mnist_val, batch_size=32)
+
+# Grab the first sample from the dataset
+_x, _y = next(iter(train_loader))
+with open("data/mnist_sample_row.csv", "w") as f:
+    f.write(", ".join(f"{x:.1f}" for x in _x[0].flatten().tolist()) + 
+            ", " + str(_y[0].item()) + "\n")
 
 # Define and train an FNN model
 class FNN(pl.LightningModule):
@@ -42,4 +48,13 @@ trainer.fit(model, train_loader, val_loader)
 
 # Save the trained model in ONNX format
 dummy_input = torch.randn(1, 28 * 28)
-torch.onnx.export(model, dummy_input, "fnn_model.onnx", input_names=['input'], output_names=['output'])
+torch.onnx.export(model, dummy_input, "models/lt_fnn_model.onnx", input_names=['input'], output_names=['output'])
+
+# Print the first sample from the validation set
+sample = next(iter(val_loader))
+x, y = sample
+print(x)
+
+# Print the model's prediction for the first sample
+y_hat = model(x)
+print(y_hat)

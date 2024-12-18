@@ -1,7 +1,7 @@
-import tensorflow as tf
-import numpy as np
 import onnx
 import tf2onnx
+import numpy as np
+import tensorflow as tf
 
 # Load a suitable dataset
 mnist = tf.keras.datasets.mnist
@@ -22,7 +22,7 @@ model.fit(x_train, y_train, epochs=5)
 
 # Save the trained model in ONNX format
 spec = (tf.TensorSpec((None, 28, 28), tf.float32, name="input"),)
-output_path = "mlp_model.onnx"
+output_path = "models/tf_mlp_model.onnx"
 model_proto, _ = tf2onnx.convert.from_keras(model, input_signature=spec, opset=13)
 with open(output_path, "wb") as f:
     f.write(model_proto.SerializeToString())

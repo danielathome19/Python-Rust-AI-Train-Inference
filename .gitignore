@@ -1,2 +1,4 @@
 /target
 /models
+/lightning_logs
+/data

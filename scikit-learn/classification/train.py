@@ -26,11 +26,26 @@ model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(train_set, train_labels)
 
 # Save the trained model in ONNX format
+target_opset = 10
 initial_type = [('float_input', FloatTensorType([None, train_set.shape[1]]))]
-onnx_model = skl2onnx.convert_sklearn(model, initial_types=initial_type)
+onnx_model = skl2onnx.convert_sklearn(model, initial_types=initial_type, target_opset=target_opset)
 with open("models/classification_model.onnx", "wb") as f:
     f.write(onnx_model.SerializeToString())
 
 # Evaluate the model
 accuracy = model.score(test_set, test_labels)
+print(f"Model accuracy: {accuracy:.2f}")
+
+# Verify model
+model = onnx.load("models/classification_model.onnx")
+onnx.checker.check_model(model)
+print("The model is valid.")
+
+# Test the model after loading it
+import onnxruntime as rt
+sess = rt.InferenceSession("models/classification_model.onnx")
+input_name = sess.get_inputs()[0].name
+label_name = sess.get_outputs()[0].name
+predictions = sess.run([label_name], {input_name: test_set.values.astype(np.float32)})[0]
+accuracy = np.mean(predictions == test_labels)
 print(f"Model accuracy: {accuracy:.2f}")

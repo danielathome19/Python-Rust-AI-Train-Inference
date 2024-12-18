@@ -1,4 +1,4 @@
-use onnxruntime::{environment::Environment, tensor::OrtOwnedTensor, GraphOptimizationLevel, LoggingLevel, session::Session};
+use onnxruntime::{environment::Environment, tensor::OrtOwnedTensor, GraphOptimizationLevel, LoggingLevel};
 use ndarray::array;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -7,7 +7,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_name("classification_inference")
         .with_log_level(LoggingLevel::Warning)
         .build()?;
-    let session = environment
+    let mut session = environment
         .new_session_builder()?
         .with_optimization_level(GraphOptimizationLevel::Basic)?
         .with_model_from_file("models/classification_model.onnx")?;

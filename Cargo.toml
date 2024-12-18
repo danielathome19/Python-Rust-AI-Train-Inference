@@ -5,13 +5,16 @@ edition = "2021"
 
 
 [dependencies]
-ndarray = "0.16.1"
-ndarray-npy = "0.9.1"
-onnxruntime = "0.0.14"
+ndarray = "0.15.1"
+ndarray-npy = "0.8.1"
+ort = "1.16.3"
+rand = "0.8.5"
+csv = "1.3.1"
+# onnxruntime = "0.0.14"
 
 
 [[bin]]
-name = "hello_world"
+name = "hello"
 path = "src/main.rs"
 
 [[bin]]
@@ -74,5 +77,5 @@ name = "lt-gan"
 path = "lightning/gan/inference.rs"
 
 [[bin]]
-name = "lt-mlp"
-path = "lightning/mlp/inference.rs"
+name = "lt-fnn"
+path = "lightning/fnn/inference.rs"
