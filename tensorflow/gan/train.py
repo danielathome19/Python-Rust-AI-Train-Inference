@@ -1,7 +1,7 @@
-import tensorflow as tf
-import numpy as np
-import onnx
 import tf2onnx
+import numpy as np
+import tensorflow as tf
+from tqdm import tqdm
 
 # Load a suitable dataset
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
@@ -72,17 +72,30 @@ def train_step(images):
 
 def train(dataset, epochs):
     for epoch in range(epochs):
-        for image_batch in dataset:
+        for _ in tqdm(range(0, len(dataset)), desc=f"Epoch {epoch+1}/{epochs}"):
+            image_batch = next(iter(dataset))
             train_step(image_batch)
 
 batch_size = 256
 train_dataset = tf.data.Dataset.from_tensor_slices(x_train).shuffle(60000).batch(batch_size)
 
-train(train_dataset, epochs=50)
+train(train_dataset, epochs=10)
 
 # Save the trained model in ONNX format
 spec = (tf.TensorSpec((None, latent_dim), tf.float32, name="input"),)
 output_path = "models/tf_gan_generator_model.onnx"
-model_proto, _ = tf2onnx.convert.from_keras(generator, input_signature=spec, opset=13, output_path=output_path)
-with open(output_path, "wb") as f:
-    f.write(model_proto.SerializeToString())
+generator.output_names=['output']
+model_proto, _ = tf2onnx.convert.from_keras(generator, input_signature=spec, opset=10, output_path=output_path)
+
+# Evaluate the model
+noise = tf.random.normal([1, latent_dim])
+generated_image = generator(noise, training=False)
+generated_image = np.squeeze(generated_image.numpy())
+generated_image = (generated_image + 1) / 2
+import matplotlib.pyplot as plt
+plt.imshow(generated_image, cmap='gray')
+plt.axis('off')
+
+# Save the generated image
+plt.savefig("data/generated_image.png")
+plt.show()

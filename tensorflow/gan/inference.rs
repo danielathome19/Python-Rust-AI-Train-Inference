@@ -1,3 +1,5 @@
+// TODO: redo from scratch to generate an image from the generator model?
+
 use onnxruntime::{environment::Environment, tensor::OrtOwnedTensor, GraphOptimizationLevel, LoggingLevel, session::Session};
 use ndarray::array;
 

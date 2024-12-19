@@ -1,4 +1,4 @@
-# Various Python train/Rust inference examples for different ML/DL libraries
+# Python train/Rust inference examples for different ML/DL libraries
 
 This repository demonstrates various machine learning and deep learning models using different libraries. Each example includes a Python script to define and train the model, and a Rust file to demonstrate inference. The models are saved in ONNX format to ensure they can be reloaded and used for inference in Rust.
 
@@ -34,11 +34,19 @@ The repository is organized as follows:
    ```
 
 ### Running the Rust Inference Scripts
-<!-- TODO: edit -->
 
-1. Navigate to the desired example directory (e.g., `scikit-learn/regression/`).
-2. Ensure you have Rust and the `onnxruntime` crate installed.
+1. Navigate to the root directory.
+2. Find the `[bin]` name of the inference example you want to run from the `Cargo.toml` file or by running the command:
+    ```bash
+    cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "python-rust-ai") | .targets[] | select(.kind[] == "bin") | .name'
+    ```
 3. Run the Rust inference script to load the ONNX model and perform inference on new data:
    ```bash
-   cargo run --release
+   cargo run --bin BINARY_NAME
+   ```
+   Or, use the `justfile` as shorthand:
+   ```bash
+   just run BINARY_NAME
+   # or
+   just r BINARY_NAME
    ```

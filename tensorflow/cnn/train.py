@@ -1,7 +1,5 @@
-import tensorflow as tf
-import numpy as np
-import onnx
 import tf2onnx
+import tensorflow as tf
 
 # Load a suitable dataset
 cifar10 = tf.keras.datasets.cifar10
@@ -27,6 +25,8 @@ model.fit(x_train, y_train, epochs=10)
 # Save the trained model in ONNX format
 spec = (tf.TensorSpec((None, 32, 32, 3), tf.float32, name="input"),)
 output_path = "models/tf_cnn_model.onnx"
-model_proto, _ = tf2onnx.convert.from_keras(model, input_signature=spec, opset=13, output_path=output_path)
-with open(output_path, "wb") as f:
-    f.write(model_proto.SerializeToString())
+model.output_names=['output']
+model_proto, _ = tf2onnx.convert.from_keras(model, input_signature=spec, opset=10, output_path=output_path)
+
+# Evaluate the model
+model.evaluate(x_test, y_test)
