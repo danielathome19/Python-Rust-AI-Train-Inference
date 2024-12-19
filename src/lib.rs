@@ -26,14 +26,6 @@ pub fn predict_outputs(session: &Session, input_data: Vec<f32>, input_shape: &[u
     Ok(outputs)
 }
 
-pub fn predict_dim_reduce_outputs(session: &Session, input_data: Vec<f32>, input_shape: &[usize]) -> Result<Vec<Value<'static>>, Box<dyn Error>> {
-    let input_array = CowArray::from(ArrayD::from_shape_vec(IxDyn(input_shape), input_data)?);
-    let input_tensor_values = vec![Value::from_array(session.allocator(), &input_array)?];
-    let outputs = session.run(input_tensor_values)?;
-    Ok(outputs)
-}
-
-
 pub fn get_output_names(session: &Session) -> Vec<String> {
     session
         .outputs
