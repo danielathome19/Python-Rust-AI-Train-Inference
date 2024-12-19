@@ -1,28 +1,21 @@
-use onnxruntime::{environment::Environment, tensor::OrtOwnedTensor, GraphOptimizationLevel, LoggingLevel, session::Session};
-use ndarray::array;
+use python_rust_ai::{create_onnx_session, read_tabular_sample, predict_outputs, get_output_names};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Load the ONNX model
-    let environment = Environment::builder()
-        .with_name("dimensionality_reduction_inference")
-        .with_log_level(LoggingLevel::Warning)
-        .build()?;
-    let session = environment
-        .new_session_builder()?
-        .with_optimization_level(GraphOptimizationLevel::Basic)?
-        .with_model_from_file("dimensionality_reduction_model.onnx")?;
-
-    // Prepare input data for inference
-    let input_data = array![[0.0, 0.0, 5.0, 13.0, 9.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]];
-    let input_tensor_values = vec![input_data.into_dyn()];
-
-    // Perform inference
-    let outputs: Vec<OrtOwnedTensor<f32, _>> = session.run(input_tensor_values)?;
-
-    // Print the inference result
-    for output in outputs {
-        println!("{:?}", output);
+    let session = create_onnx_session("models/dimensionality_reduction_model.onnx")?;
+    let input_data_2d = read_tabular_sample("data/digits.csv")?;
+    let input_shape = &[input_data_2d.len(), input_data_2d[0].len()];
+    let input_flat = input_data_2d.into_iter().flatten().map(|x| x as f32).collect();  // Flatten 2D data to 1D Vec<f32>
+    let outputs = predict_outputs(&session, input_flat, input_shape)?;
+    let output_names = get_output_names(&session);
+    
+    for (i, output) in outputs.iter().enumerate() {
+        let output_name = &output_names[i];
+        if output_name == "variable" {
+            let variables_array = output.try_extract::<f32>()?;
+            println!("Transformed data shape: {:?}", variables_array.view().shape());
+            println!("Original data shape: {:?}", input_shape);
+        }
     }
-
+    
     Ok(())
 }

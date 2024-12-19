@@ -1,9 +1,9 @@
-import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
 import onnx
 import skl2onnx
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 from skl2onnx.common.data_types import FloatTensorType
 
 # Load the iris dataset
@@ -31,13 +31,12 @@ model = RandomForestClassifier(n_estimators=100, random_state=42)
 model.fit(train_set, train_labels)
 
 # Save the trained model in ONNX format
-target_opset = 10
 initial_type = [('float_input', FloatTensorType([None, train_set.shape[1]]))]
 onnx_model = skl2onnx.convert_sklearn(
     model, 
     initial_types=initial_type, 
-    target_opset=target_opset,
-    options={"zipmap": False, "output_class_labels": False}  # Disable class label output
+    target_opset=10,
+    options={"zipmap": False, "output_class_labels": False}
 )
 with open("models/classification_model.onnx", "wb") as f:
     f.write(onnx_model.SerializeToString())
@@ -52,6 +51,7 @@ onnx.checker.check_model(model)
 print("The model is valid.")
 
 """
+# Type 7 - tensor(int64); Type 1 - tensor(float)
 # Inspect inputs
 print("Inputs:")
 for input_tensor in model.graph.input:
@@ -66,6 +66,7 @@ for output_tensor in model.graph.output:
     print(f"Type: {output_tensor.type.tensor_type.elem_type}")  # Check the element type
     print(f"Shape: {[(d.dim_value if d.dim_value > 0 else 'None') for d in output_tensor.type.tensor_type.shape.dim]}")
 """
+
 # Test the model after loading it
 import onnxruntime as rt
 sess = rt.InferenceSession("models/classification_model.onnx")

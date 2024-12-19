@@ -4,6 +4,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let session = create_onnx_session("models/lt_rnn_model.onnx")?;
     let (input_data, input_label) = read_numeric_sample("data/mnist_sample_row.csv")?;
     let outputs = predict_outputs(&session, input_data, &[1, 28, 28])?;
+    
     for output in outputs {
         let output_array = output.try_extract::<f32>()?;
         let predicted_label = ort_argmax(output_array);

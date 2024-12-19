@@ -26,6 +26,14 @@ pub fn predict_outputs(session: &Session, input_data: Vec<f32>, input_shape: &[u
     Ok(outputs)
 }
 
+pub fn predict_dim_reduce_outputs(session: &Session, input_data: Vec<f32>, input_shape: &[usize]) -> Result<Vec<Value<'static>>, Box<dyn Error>> {
+    let input_array = CowArray::from(ArrayD::from_shape_vec(IxDyn(input_shape), input_data)?);
+    let input_tensor_values = vec![Value::from_array(session.allocator(), &input_array)?];
+    let outputs = session.run(input_tensor_values)?;
+    Ok(outputs)
+}
+
+
 pub fn get_output_names(session: &Session) -> Vec<String> {
     session
         .outputs
@@ -44,10 +52,10 @@ pub fn ort_argmax(array: OrtOwnedTensor<'_, f32, Dim<IxDynImpl>>) -> usize {
         .unwrap()
 }
 
-pub fn read_numeric_sample(file_path: &str) -> Result<(Vec<f32>, i32), Box<dyn Error>> {
+pub fn read_numeric_sample(file_path: &str) -> Result<(Vec<f32>, f32), Box<dyn Error>> {
     // Create a CSV reader
     let mut reader = ReaderBuilder::new()
-        .has_headers(false) // Disable header parsing
+        .has_headers(false)  // Disable header parsing
         .from_path(file_path)?;
 
     // Read the first row
@@ -60,9 +68,9 @@ pub fn read_numeric_sample(file_path: &str) -> Result<(Vec<f32>, i32), Box<dyn E
             .filter_map(|s| s.trim().parse::<f32>().ok())
             .collect();
 
-        // Parse the last column as i32 (the label)
+        // Parse the last column (the label)
         if let Some(last_value) = record.iter().last() {
-            let label = last_value.trim().parse::<i32>()?;
+            let label = last_value.trim().parse::<f32>()?;
             return Ok((numbers, label));
         }
     }
@@ -70,6 +78,24 @@ pub fn read_numeric_sample(file_path: &str) -> Result<(Vec<f32>, i32), Box<dyn E
     Err("File is empty or invalid format".into())
 }
 
+// Read in CSV file with tabular data; return a 2D array of floats
+pub fn read_tabular_sample(file_path: &str) -> Result<Vec<Vec<f64>>, Box<dyn Error>> {
+    let mut reader = ReaderBuilder::new()
+        .has_headers(false)   // Disable header parsing
+        .from_path(file_path)?;
+
+    let mut data = Vec::new();
+    for result in reader.records() {
+        let record = result?;
+        let numbers: Vec<f64> = record
+            .iter()
+            .filter_map(|s| s.trim().parse::<f64>().ok())
+            .collect();
+        data.push(numbers);
+    }
+
+    Ok(data)
+}
 pub fn dot(v1: &Array1<f64>, v2: &[f64]) -> f64 {
     v1.iter().zip(v2.iter()).map(|(a, b)| a * b).sum()
 }
