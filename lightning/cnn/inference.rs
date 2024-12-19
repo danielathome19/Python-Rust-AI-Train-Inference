@@ -1,28 +1,9 @@
-use ort::{Environment, SessionBuilder, GraphOptimizationLevel, Value, LoggingLevel};
-use std::{path::Path, sync::Arc};
-use ndarray::{Array4, CowArray};
-use python_rust_ai::{read_numeric_sample, ort_argmax};
+use python_rust_ai::{create_onnx_session, read_numeric_sample, ort_argmax, predict_outputs};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize the environment
-    let env = Arc::new(Environment::builder()
-        .with_name("cnn_inference")
-        .with_log_level(LoggingLevel::Warning)
-        .build()?);
-
-    // Load the ONNX model
-    let model_path = Path::new("models/lt_cnn_model.onnx");
-    let session = SessionBuilder::new(&env)?
-        .with_optimization_level(GraphOptimizationLevel::Level1)?
-        .with_model_from_file(model_path)?;
-
-    // Prepare sample input data
+    let session = create_onnx_session("models/lt_cnn_model.onnx")?;
     let (input_data, input_label) = read_numeric_sample("data/cifar_sample_row.csv")?;
-    let input_array = CowArray::from(Array4::from_shape_vec((1, 3, 32, 32), input_data)?.into_dyn());
-    let input_tensor_values = vec![Value::from_array(session.allocator(), &input_array)?];
-
-    // Perform inference
-    let outputs = session.run(input_tensor_values)?;
+    let outputs = predict_outputs(&session, input_data, &[1, 3, 32, 32])?;
     for output in outputs {
         let output_array = output.try_extract::<f32>()?;
         let predicted_label = ort_argmax(output_array);

@@ -20,7 +20,7 @@ model.fit(x_train, y_train, epochs=5)
 
 # Save the trained model in ONNX format
 spec = (tf.TensorSpec((None, 28, 28), tf.float32, name="input"),)
-output_path = "lstm_model.onnx"
+output_path = "models/tf_lstm_model.onnx"
 model_proto, _ = tf2onnx.convert.from_keras(model, input_signature=spec, opset=13, output_path=output_path)
 with open(output_path, "wb") as f:
     f.write(model_proto.SerializeToString())

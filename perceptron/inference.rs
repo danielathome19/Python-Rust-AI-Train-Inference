@@ -5,6 +5,7 @@
 // use std::io::{BufReader, Read};
 use ndarray::Array1;
 use ndarray_npy::read_npy;
+use python_rust_ai::dot;
 
 // Define a Perceptron struct
 struct Perceptron {
@@ -13,9 +14,8 @@ struct Perceptron {
 }
 
 impl Perceptron {
-    // Method for inference
     fn predict(&self, inputs: &[f64]) -> i32 {
-        let weighted_sum: f64 = self.weights.iter().zip(inputs.iter()).map(|(w, x)| w * x).sum::<f64>() + self.bias;
+        let weighted_sum: f64 = dot(&self.weights, inputs) + self.bias;
         if weighted_sum >= 0.0 { 1 } else { 0 }
     }
 }

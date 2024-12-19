@@ -1,7 +1,38 @@
-use std::error::Error;
 use csv::ReaderBuilder;
-use ort::tensor::OrtOwnedTensor;
-use ndarray::{Dim, IxDynImpl};
+use std::{path::Path, sync::Arc, error::Error};
+use ndarray::{Array1, ArrayD, CowArray, Dim, IxDynImpl, IxDyn};
+use ort::{Environment, Session, SessionBuilder, Value, GraphOptimizationLevel, LoggingLevel, tensor::OrtOwnedTensor};
+
+pub fn create_onnx_session(model_path: &str) -> Result<Session, Box<dyn Error>> {
+    // Initialize the environment
+    let env = Arc::new(Environment::builder()
+        .with_name("model_inference")
+        .with_log_level(LoggingLevel::Verbose)  // Warning
+        .build()?);
+
+    // Load the ONNX model and create a session
+    let model_file_path = Path::new(model_path);
+    let session = SessionBuilder::new(&env)?
+        .with_optimization_level(GraphOptimizationLevel::Level1)?
+        .with_model_from_file(model_file_path)?;
+    
+    Ok(session)
+}
+
+pub fn predict_outputs(session: &Session, input_data: Vec<f32>, input_shape: &[usize]) -> Result<Vec<Value<'static>>, Box<dyn Error>> {
+    let input_array = CowArray::from(ArrayD::from_shape_vec(IxDyn(input_shape), input_data)?);
+    let input_tensor_values = vec![Value::from_array(session.allocator(), &input_array)?];
+    let outputs = session.run(input_tensor_values)?;
+    Ok(outputs)
+}
+
+pub fn get_output_names(session: &Session) -> Vec<String> {
+    session
+        .outputs
+        .iter()
+        .map(|output| output.name.to_string())
+        .collect()
+}
 
 pub fn ort_argmax(array: OrtOwnedTensor<'_, f32, Dim<IxDynImpl>>) -> usize {
     array
@@ -37,4 +68,8 @@ pub fn read_numeric_sample(file_path: &str) -> Result<(Vec<f32>, i32), Box<dyn E
     }
 
     Err("File is empty or invalid format".into())
+}
+
+pub fn dot(v1: &Array1<f64>, v2: &[f64]) -> f64 {
+    v1.iter().zip(v2.iter()).map(|(a, b)| a * b).sum()
 }

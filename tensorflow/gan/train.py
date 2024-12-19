@@ -82,7 +82,7 @@ train(train_dataset, epochs=50)
 
 # Save the trained model in ONNX format
 spec = (tf.TensorSpec((None, latent_dim), tf.float32, name="input"),)
-output_path = "gan_generator_model.onnx"
+output_path = "models/tf_gan_generator_model.onnx"
 model_proto, _ = tf2onnx.convert.from_keras(generator, input_signature=spec, opset=13, output_path=output_path)
 with open(output_path, "wb") as f:
     f.write(model_proto.SerializeToString())
