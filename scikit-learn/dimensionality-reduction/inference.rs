@@ -4,7 +4,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let session = create_onnx_session("models/dimensionality_reduction_model.onnx")?;
     let input_data_2d = read_tabular_sample("data/digits.csv")?;
     let input_shape = &[input_data_2d.len(), input_data_2d[0].len()];
-    let input_flat = input_data_2d.into_iter().flatten().map(|x| x as f32).collect();  // Flatten 2D data to 1D Vec<f32>
+    let input_flat = input_data_2d.into_iter().flatten().map(|x| x as f32).collect();  // Flatten 1D Vec<f32>
     let outputs = predict_outputs(&session, input_flat, input_shape)?;
     let output_names = get_output_names(&session);
     

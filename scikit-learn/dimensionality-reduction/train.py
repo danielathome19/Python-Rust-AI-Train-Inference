@@ -26,5 +26,5 @@ with open("models/dimensionality_reduction_model.onnx", "wb") as f:
 
 # Evaluate the model
 transformed_data = model.transform(data)
-print(f"Original data shape: {data.shape}")
 print(f"Transformed data shape: {transformed_data.shape}")
+print(f"Original data shape: {data.shape}")
