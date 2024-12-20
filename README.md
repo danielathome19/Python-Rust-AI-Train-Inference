@@ -1,6 +1,6 @@
-# Python train/Rust inference examples for different ML/DL libraries
+# Python train/Rust inference examples for AI models
 
-This repository demonstrates various machine learning and deep learning models using different libraries. Each example includes a Python script to define and train the model, and a Rust file to demonstrate inference. The models are saved in ONNX format to ensure they can be reloaded and used for inference in Rust.
+This repository demonstrates various machine learning and deep learning models using different libraries. Each example includes a Python script to define and train the model and a Rust file to demonstrate inference. The models are saved in ONNX format to ensure they can be reloaded and used for inference in Rust.
 
 ## Repository Structure
 
