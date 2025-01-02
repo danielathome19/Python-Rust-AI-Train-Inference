@@ -70,8 +70,8 @@ pub fn read_numeric_sample(file_path: &str) -> Result<(Vec<f32>, f32), Box<dyn E
     Err("File is empty or invalid format".into())
 }
 
-// Read in CSV file with tabular data; return a 2D array of floats
 pub fn read_tabular_sample(file_path: &str) -> Result<Vec<Vec<f64>>, Box<dyn Error>> {
+    // Read in CSV file with tabular data; return a 2D array of floats
     let mut reader = ReaderBuilder::new()
         .has_headers(false)   // Disable header parsing
         .from_path(file_path)?;
@@ -88,6 +88,7 @@ pub fn read_tabular_sample(file_path: &str) -> Result<Vec<Vec<f64>>, Box<dyn Err
 
     Ok(data)
 }
+
 pub fn dot(v1: &Array1<f64>, v2: &[f64]) -> f64 {
     v1.iter().zip(v2.iter()).map(|(a, b)| a * b).sum()
 }
